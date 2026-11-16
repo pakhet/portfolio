@@ -54,7 +54,7 @@ jobs:
       - uses: azure/setup-helm@v4
       - run: helm lint deploy/helm/portfolio
       - name: Trivy misconfiguration scan (Terraform, Helm, Dockerfile)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
           scan-ref: .
@@ -72,7 +72,7 @@ jobs:
       - name: Build image
         run: docker build -t $IMAGE_NAME:ci site
       - name: Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:ci
           severity: HIGH,CRITICAL
