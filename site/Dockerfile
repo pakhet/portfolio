@@ -9,7 +9,7 @@ RUN npm run build
 
 # ── Runtime stage: unprivileged nginx serving static files only ───────────────
 # Pin by digest in production; Dependabot keeps this updated.
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 # Drop the default config and ship our hardened one.
 COPY --chown=root:root nginx/nginx.conf nginx/security-headers.conf /etc/nginx/
 COPY --from=build --chown=root:root /app/dist /usr/share/nginx/html
