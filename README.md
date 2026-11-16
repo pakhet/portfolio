@@ -36,7 +36,7 @@ free tier. If this ever outgrows it, the Helm chart is ready to go.
 - **No long-lived credentials.** CI authenticates through OIDC and Workload Identity Federation. The trust is pinned to this repo's numeric ID and the `production` environment.
 - **Least privilege.** The deployer's roles are scoped per resource. The runtime service account has no roles at all.
 - **Supply chain.** Dependabot keeps dependencies current, and Trivy fails the build on fixable HIGH/CRITICAL CVEs or IaC misconfigurations. Every release gets an SBOM and a signed image, verifiable with `cosign verify`.
-- **Hardened serving.** The site is static and loads no JavaScript. It's served by unprivileged nginx with a strict CSP (`default-src 'none'`), HSTS, COOP/CORP and Permissions-Policy, and the server version is hidden.
+- **Hardened serving.** The site is static. Its only JavaScript is one small same-origin file for the theme toggle, so the CSP stays strict (`default-src 'none'; script-src 'self'`, no inline scripts or styles). It's served by unprivileged nginx with HSTS, COOP/CORP and Permissions-Policy, and the server version is hidden.
 - **Cost guardrails.** Cloud Run is capped at a maximum instance count, there's a budget alert, and the registry has a cleanup policy.
 
 ## Local development
