@@ -68,7 +68,6 @@ export const experience: Job[] = [
         title: 'Security Team Lead',
         start: 'Jan 2026',
         end: 'Apr 2026',
-        note: 'Off-cycle promotion',
         highlights: [
           'Ran the company’s largest penetration testing program to date.',
           'Onboarded new hires and built out the team.',
