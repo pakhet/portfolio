@@ -59,7 +59,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       <slot />
     </main>
     <footer class="wrap site-footer muted">
-      <span class="mono">© {new Date().getFullYear()} {profile.name} · <span class="purr">supervised by cats 🐾</span></span>
+      <span class="mono">© {new Date().getFullYear()} {profile.name} · <span class="tagline">security leader, keeping watch over cyberspace</span></span>
       <span class="links">
         <a href={profile.links.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
         {profile.links.github && (
