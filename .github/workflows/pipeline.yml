@@ -30,6 +30,14 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm audit --omit=dev --audit-level=high
       - run: npm run build
+      - name: security.txt must not be within 30 days of expiry
+        run: |
+          exp=$(grep '^Expires:' public/.well-known/security.txt | cut -d' ' -f2)
+          if [ "$(date -d "$exp" +%s)" -lt "$(date -d '+30 days' +%s)" ]; then
+            echo "::error file=site/public/.well-known/security.txt::Expires ($exp) is less than 30 days away. Bump it."
+            exit 1
+          fi
+          test -f dist/.well-known/security.txt
 
   secrets-scan:
     name: Secret scan
@@ -98,6 +106,8 @@ jobs:
           echo "$headers" | grep -qi '^strict-transport-security:'
           ! echo "$headers" | grep -qi '^server: nginx/'   # version must be hidden
           curl -fsS http://127.0.0.1:8080/projects/incident-radar > /dev/null
+          curl -fsS http://127.0.0.1:8080/.well-known/security.txt | grep -q '^Contact:'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/.git/config)" = 403
 
   deploy:
     name: Deploy to GCP

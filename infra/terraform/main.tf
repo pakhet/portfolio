@@ -14,11 +14,17 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = var.region
+  # Bill API quota to this project (required by Firebase and Budgets APIs with user credentials).
+  user_project_override = true
+  billing_project       = var.project_id
 }
 
 provider "google-beta" {
   project = var.project_id
   region  = var.region
+  # Bill API quota to this project (required by Firebase and Budgets APIs with user credentials).
+  user_project_override = true
+  billing_project       = var.project_id
 }
 
 data "google_project" "this" {}
