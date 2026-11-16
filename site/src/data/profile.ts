@@ -52,12 +52,12 @@ export const experience: Job[] = [
     org: 'PDQ',
     location: 'Salt Lake City, UT',
     start: 'Sep 2022',
-    end: 'Nov 2026',
+    end: 'Present',
     roles: [
       {
         title: 'Security Manager',
         start: 'May 2026',
-        end: 'Nov 2026',
+        end: 'Present',
         highlights: [
           'Led a distributed, international security team covering security operations and application security.',
           'Built the team’s operating rhythm: 1:1s, standups, OKR planning, and the on-call rotation. Delegated red team work and investigations to grow the team.',
