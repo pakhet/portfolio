@@ -51,7 +51,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - run: terraform fmt -check -recursive infra/terraform
       - run: terraform -chdir=infra/terraform init -backend=false && terraform -chdir=infra/terraform validate
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
       - run: helm lint deploy/helm/portfolio
       - name: Trivy misconfiguration scan (Terraform, Helm, Dockerfile)
         uses: aquasecurity/trivy-action@0.33.1
