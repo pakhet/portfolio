@@ -10,6 +10,10 @@ RUN npm run build
 # ── Runtime stage: unprivileged nginx serving static files only ───────────────
 # Dependabot keeps base images updated weekly.
 FROM nginxinc/nginx-unprivileged:1.31-alpine
+# Upstream images lag behind Alpine security fixes, so patch OS packages at
+# build time, and remove curl (not needed at runtime; less attack surface).
+USER root
+RUN apk upgrade --no-cache && apk del --no-cache curl
 # Drop the default config and ship our hardened one.
 COPY --chown=root:root nginx/nginx.conf nginx/security-headers.conf /etc/nginx/
 COPY --from=build --chown=root:root /app/dist /usr/share/nginx/html
