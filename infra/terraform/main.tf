@@ -110,7 +110,8 @@ resource "google_cloud_run_v2_service" "site" {
   }
 
   lifecycle {
-    ignore_changes = [template[0].containers[0].image, client, client_version]
+    # CI owns the image; the API also back-fills a service-level scaling block we never set.
+    ignore_changes = [template[0].containers[0].image, client, client_version, scaling]
   }
 
   depends_on = [google_project_service.apis]
