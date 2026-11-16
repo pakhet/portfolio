@@ -1,0 +1,83 @@
+---
+import '../styles/global.css';
+import { profile } from '../data/profile';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = `${profile.name} — ${profile.headline}. ${profile.focus.join(', ')}.` } = Astro.props;
+const fullTitle = title ? `${title} · ${profile.name}` : `${profile.name} · ${profile.headline}`;
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/', label: 'About' },
+  { href: '/experience', label: 'Experience' },
+  { href: '/projects', label: 'Projects' },
+];
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand mono" href="/">rc<span class="cursor">_</span></a>
+        <nav aria-label="Primary">
+          {nav.map((n) => (
+            <a href={n.href} aria-current={isActive(n.href) ? 'page' : undefined}>{n.label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+    <footer class="wrap site-footer muted">
+      <span>© {new Date().getFullYear()} {profile.name}</span>
+      <span class="links">
+        <a href={profile.links.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
+        {profile.links.github && (
+          <a href={profile.links.github} rel="noopener noreferrer" target="_blank">GitHub</a>
+        )}
+      </span>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 5;
+  }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { font-weight: 700; font-size: 1.1rem; color: var(--text); text-decoration: none; }
+  .cursor { color: var(--accent); animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .cursor { animation: none; } }
+  nav { display: flex; gap: 1.25rem; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.95rem; }
+  nav a:hover, nav a[aria-current='page'] { color: var(--text); }
+  nav a[aria-current='page'] { box-shadow: inset 0 -2px 0 var(--accent); }
+  main { padding: 3rem 16px 4rem; min-height: 70vh; }
+  .site-footer {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+    border-top: 1px solid var(--border); padding-top: 1.5rem; padding-bottom: 2rem; font-size: 0.9rem;
+  }
+  .links { display: flex; gap: 1rem; }
+</style>

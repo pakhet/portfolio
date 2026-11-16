@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "public": "deploy/firebase-public",
+    "ignore": ["**/.*"],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": { "serviceId": "portfolio", "region": "us-central1" }
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectTabs from '../../components/ProjectTabs.astro';
+import { projects, statusLabel, type Project } from '../../data/projects';
+
+export function getStaticPaths() {
+  return projects.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project } = Astro.props as { project: Project };
+---
+
+<Base title={project.name} description={project.tagline}>
+  <p class="eyebrow">Project</p>
+  <h1>{project.name}</h1>
+  <ProjectTabs active={project.slug} />
+  <div class="meta">
+    <span class={`status ${project.status}`}>{statusLabel[project.status]}</span>
+    {project.repo && <a href={project.repo} rel="noopener noreferrer" target="_blank">Source on GitHub →</a>}
+  </div>
+  <p class="lead">{project.tagline}</p>
+  {project.description.map((d) => <p>{d}</p>)}
+  <h2>Stack</h2>
+  <ul class="tags">{project.stack.map((s) => <li>{s}</li>)}</ul>
+</Base>
+
+<style>
+  .meta { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .lead { font-size: 1.15rem; }
+  p { max-width: 720px; }
+  .status { font-family: var(--mono); font-size: 0.75rem; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .status.live { color: var(--accent); border-color: var(--accent); }
+</style>

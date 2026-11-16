@@ -1,0 +1,27 @@
+---
+// Tab strip shown at the top of /projects and every project page.
+import { projects } from '../data/projects';
+
+interface Props { active?: string }
+const { active } = Astro.props;
+---
+
+<nav class="tabs" aria-label="Projects">
+  <a href="/projects" aria-current={!active ? 'page' : undefined}>All</a>
+  {projects.map((p) => (
+    <a href={`/projects/${p.slug}`} aria-current={active === p.slug ? 'page' : undefined}>{p.name}</a>
+  ))}
+</nav>
+
+<style>
+  .tabs {
+    display: flex; gap: 0.25rem; overflow-x: auto; border-bottom: 1px solid var(--border);
+    margin: 1.5rem 0 2rem; scrollbar-width: thin;
+  }
+  .tabs a {
+    padding: 0.6rem 1rem; color: var(--muted); text-decoration: none; white-space: nowrap;
+    font-family: var(--mono); font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tabs a:hover { color: var(--text); }
+  .tabs a[aria-current='page'] { color: var(--accent); border-bottom-color: var(--accent); }
+</style>

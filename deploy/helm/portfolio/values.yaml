@@ -1,0 +1,25 @@
+replicaCount: 2
+
+image:
+  repository: portfolio
+  tag: local
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests: { cpu: 25m, memory: 32Mi }
+  limits: { cpu: 200m, memory: 64Mi }
+
+# Restrict ingress to pods in namespaces labeled for ingress controllers.
+# Set to false on clusters without a NetworkPolicy-capable CNI.
+networkPolicy:
+  enabled: true
+  allowFromNamespaceLabels:
+    kubernetes.io/metadata.name: ingress-nginx
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

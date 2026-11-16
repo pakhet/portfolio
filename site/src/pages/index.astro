@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import { profile, certifications, education, skills, community } from '../data/profile';
+import { projects, statusLabel } from '../data/projects';
+---
+
+<Base>
+  <section class="hero">
+    <p class="eyebrow">{profile.focus.join(' · ')}</p>
+    <h1>{profile.name}</h1>
+    <p class="lead">{profile.headline} based in {profile.location}.</p>
+    {profile.summary.map((p) => <p class="muted">{p}</p>)}
+    <div class="cta">
+      <a class="btn" href="/projects">View projects</a>
+      <a class="btn ghost" href={profile.links.linkedin} rel="noopener noreferrer" target="_blank">Connect on LinkedIn</a>
+    </div>
+  </section>
+
+  <h2>Featured project</h2>
+  {projects.slice(0, 1).map((p) => (
+    <a class="card feature" href={`/projects/${p.slug}`}>
+      <div class="row">
+        <h3>{p.name}</h3>
+        <span class={`status ${p.status}`}>{statusLabel[p.status]}</span>
+      </div>
+      <p class="muted">{p.tagline}</p>
+    </a>
+  ))}
+
+  <div class="grid">
+    <section>
+      <h2>Skills</h2>
+      <ul class="tags">{skills.map((s) => <li>{s}</li>)}</ul>
+    </section>
+    <section>
+      <h2>Education & certifications</h2>
+      <p><strong>{education.degree}</strong><br /><span class="muted">{education.school} · {education.years}</span></p>
+      <ul class="plain">{certifications.map((c) => <li>{c}</li>)}</ul>
+    </section>
+  </div>
+
+  <h2>Community</h2>
+  <div class="card">
+    <h3>{community.title}, {community.org}</h3>
+    <p class="muted mono small">{community.start} – {community.end}</p>
+    <ul>{community.points.map((pt) => <li>{pt}</li>)}</ul>
+  </div>
+</Base>
+
+<style>
+  .hero { padding: 2rem 0 1rem; max-width: 720px; }
+  .lead { font-size: 1.2rem; margin: 0 0 1rem; }
+  .cta { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .btn {
+    display: inline-block; padding: 0.6rem 1.1rem; border-radius: 8px;
+    background: var(--accent); color: var(--bg); text-decoration: none; font-weight: 600;
+  }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .feature { display: block; text-decoration: none; color: inherit; transition: border-color 0.15s; }
+  .feature:hover { border-color: var(--accent); }
+  .feature p { margin: 0.4rem 0 0; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 2rem; }
+  .plain { list-style: none; padding: 0; }
+  .small { font-size: 0.85rem; margin: 0.25rem 0 0; }
+  .status { font-family: var(--mono); font-size: 0.75rem; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+  .status.live { color: var(--accent); border-color: var(--accent); }
+</style>

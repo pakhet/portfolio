@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import { experience } from '../data/profile';
+---
+
+<Base title="Experience">
+  <p class="eyebrow">Career</p>
+  <h1>Experience</h1>
+  <ol class="timeline">
+    {experience.map((job) => (
+      <li class="card">
+        <div class="head">
+          <h2>{job.org}</h2>
+          <span class="muted small">{job.location}</span>
+        </div>
+        <ul class="roles">
+          {job.roles.map((r) => (
+            <li>
+              <strong>{r.title}</strong>
+              <span class="mono muted small">{r.start} – {r.end}</span>
+            </li>
+          ))}
+        </ul>
+        {job.blurb && <p class="muted">{job.blurb}</p>}
+        {job.tags && <ul class="tags">{job.tags.map((t) => <li>{t}</li>)}</ul>}
+      </li>
+    ))}
+  </ol>
+</Base>
+
+<style>
+  .timeline { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 1rem; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .head h2 { margin: 0; font-size: 1.2rem; }
+  .roles { list-style: none; padding: 0; margin: 0.75rem 0; display: grid; gap: 0.3rem; }
+  .roles li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  .small { font-size: 0.85rem; }
+  p { margin: 0.5rem 0 0; }
+</style>

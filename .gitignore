@@ -1,0 +1,25 @@
+node_modules/
+dist/
+.astro/
+.env*
+*.log
+.DS_Store
+
+# Terraform: state and real variable values never go in the repo
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl.bak
+
+# Firebase CLI cache
+.firebase/
+
+# Personal source material — keep resumes and career notes out of the repo
+*.docx
+*.pdf
+career-brief*.md
+
+# Local editor/agent config
+.claude/

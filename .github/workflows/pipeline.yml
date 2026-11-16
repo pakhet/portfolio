@@ -1,0 +1,147 @@
+name: pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Default to no permissions; each job asks only for what it needs.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE_NAME: portfolio
+
+jobs:
+  site:
+    name: Build site
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    defaults: { run: { working-directory: site } }
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: site/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+
+  secrets-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+
+  iac:
+    name: IaC lint & scan
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive infra/terraform
+      - run: terraform -chdir=infra/terraform init -backend=false && terraform -chdir=infra/terraform validate
+      - uses: azure/setup-helm@v4
+      - run: helm lint deploy/helm/portfolio
+      - name: Trivy misconfiguration scan (Terraform, Helm, Dockerfile)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: config
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+  image:
+    name: Container build, scan & k8s test
+    runs-on: ubuntu-latest
+    needs: [site]
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - name: Build image
+        run: docker build -t $IMAGE_NAME:ci site
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      # Prove the same image runs on Kubernetes with a hardened pod spec,
+      # without paying for a cluster: spin up kind, deploy the Helm chart, test it.
+      - uses: helm/kind-action@v1
+        with: { cluster_name: ci }
+      - name: Deploy chart to kind
+        run: |
+          kind load docker-image $IMAGE_NAME:ci --name ci
+          helm install portfolio deploy/helm/portfolio \
+            --set image.repository=$IMAGE_NAME --set image.tag=ci --wait --timeout 120s
+      - name: Smoke test
+        run: |
+          kubectl port-forward svc/portfolio 8080:80 &
+          sleep 3
+          curl -fsS http://127.0.0.1:8080/healthz
+          headers=$(curl -fsSI http://127.0.0.1:8080/)
+          echo "$headers"
+          echo "$headers" | grep -qi '^content-security-policy:'
+          echo "$headers" | grep -qi '^strict-transport-security:'
+          ! echo "$headers" | grep -qi '^server: nginx/'   # version must be hidden
+          curl -fsS http://127.0.0.1:8080/projects/incident-radar > /dev/null
+
+  deploy:
+    name: Deploy to GCP
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [site, secrets-scan, iac, image]
+    runs-on: ubuntu-latest
+    environment: production # WIF only trusts this environment
+    permissions:
+      contents: read
+      id-token: write # OIDC token for keyless GCP auth + keyless image signing
+    env:
+      REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/portfolio/portfolio
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker $REGISTRY --quiet
+      - name: Build & push
+        id: push
+        run: |
+          docker build -t $IMAGE:${GITHUB_SHA} site
+          docker push $IMAGE:${GITHUB_SHA}
+          echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE:${GITHUB_SHA})" >> "$GITHUB_OUTPUT"
+      - uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.push.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign image & attach SBOM (keyless)
+        run: |
+          cosign sign --yes ${{ steps.push.outputs.digest }}
+          cosign attest --yes --type spdxjson --predicate sbom.spdx.json ${{ steps.push.outputs.digest }}
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: portfolio
+          region: ${{ vars.GCP_REGION }}
+          image: ${{ steps.push.outputs.digest }}
+      - name: Deploy Firebase Hosting config
+        run: npx --yes firebase-tools@latest deploy --only hosting --project ${{ vars.GCP_PROJECT_ID }} --non-interactive
