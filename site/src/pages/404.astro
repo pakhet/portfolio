@@ -1,9 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
+import ConstellationCat from '../components/ConstellationCat.astro';
 ---
 
-<Base title="Not found">
-  <p class="eyebrow">404</p>
-  <h1>Nothing here.</h1>
-  <p class="muted">That page doesn’t exist. <a href="/">Head back home</a>.</p>
+<Base title="Lost in space">
+  <div class="lost">
+    <div class="art"><ConstellationCat /></div>
+    <div>
+      <p class="eyebrow">Error 404</p>
+      <h1>Lost in cyberspace.</h1>
+      <p class="muted">This page drifted out of orbit. Even the cat can’t find it.</p>
+      <a class="btn" href="/">Return to base</a>
+    </div>
+  </div>
 </Base>
+
+<style>
+  .lost { display: grid; grid-template-columns: 220px 1fr; gap: 2rem; align-items: center; padding-top: 2rem; }
+  .art { transform: rotate(-12deg); }
+  @media (max-width: 600px) { .lost { grid-template-columns: 1fr; } .art { max-width: 160px; } }
+</style>
