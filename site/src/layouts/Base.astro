@@ -110,6 +110,11 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     border-top: 1px solid var(--border); padding-top: 1.5rem; padding-bottom: 2rem; font-size: 0.85rem;
   }
   .links { display: flex; gap: 1rem; }
+  /* Very narrow screens: nav gets its own row instead of overflowing. */
+  @media (max-width: 440px) {
+    .bar { height: auto; flex-wrap: wrap; row-gap: 0.4rem; padding-top: 0.6rem; padding-bottom: 0.6rem; }
+    .right { width: 100%; justify-content: space-between; }
+  }
   @media (max-width: 520px) {
     .brand .mono { display: none; }
     nav { gap: 0.8rem; }
