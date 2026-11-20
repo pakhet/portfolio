@@ -25,6 +25,12 @@ const building = project.status !== 'live';
   ) : (
     <>
       <p class="lead">{project.tagline}</p>
+      {(project.url || project.repo) && (
+        <div class="cta">
+          {project.url && <a class="btn" href={project.url} rel="noopener noreferrer" target="_blank">Open the live dashboard →</a>}
+          {project.repo && <a class="btn ghost" href={project.repo} rel="noopener noreferrer" target="_blank">Source on GitHub</a>}
+        </div>
+      )}
       {project.description?.map((d) => <p>{d}</p>)}
       {project.stack && (
         <>
@@ -32,7 +38,6 @@ const building = project.status !== 'live';
           <ul class="tags">{project.stack.map((s) => <li>{s}</li>)}</ul>
         </>
       )}
-      {project.repo && <p><a href={project.repo} rel="noopener noreferrer" target="_blank">Source on GitHub →</a></p>}
     </>
   )}
 </Base>
@@ -44,5 +49,6 @@ const building = project.status !== 'live';
   .cursor { color: var(--accent); animation: blink 1.1s steps(1) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   .lead { font-size: 1.15rem; }
+  .cta { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0 1.5rem; }
   p { max-width: 720px; }
 </style>

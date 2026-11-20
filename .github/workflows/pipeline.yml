@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "23 6 * * 1" # weekly rebuild picks up base-image security patches (e.g. nginx)
   workflow_dispatch:
 
 # Default to no permissions; each job asks only for what it needs.
@@ -111,7 +113,7 @@ jobs:
 
   deploy:
     name: Deploy to GCP
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [site, secrets-scan, iac, image]
     runs-on: ubuntu-latest
     environment: production # WIF only trusts this environment
@@ -134,9 +136,10 @@ jobs:
       - name: Build & push
         id: push
         run: |
-          docker build -t $IMAGE:${GITHUB_SHA} site
-          docker push $IMAGE:${GITHUB_SHA}
-          echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE:${GITHUB_SHA})" >> "$GITHUB_OUTPUT"
+          tag="${GITHUB_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"  # unique: registry tags are immutable
+          docker build --pull -t "$IMAGE:$tag" site
+          docker push "$IMAGE:$tag"
+          echo "digest=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE:$tag")" >> "$GITHUB_OUTPUT"
       - uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
           image: ${{ steps.push.outputs.digest }}
