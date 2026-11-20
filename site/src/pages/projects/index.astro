@@ -11,22 +11,29 @@ import { projects, statusLabel } from '../../data/projects';
   <ProjectTabs />
   <div class="list">
     {projects.map((p) => (
-      <a class="card item" href={`/projects/${p.slug}`}>
+      <article class="card hud item">
         <div class="row">
-          <h2>{p.name}</h2>
+          <h2><a href={`/projects/${p.slug}`}>{p.name}</a></h2>
           <span class={`status ${p.status === 'live' ? 'live' : ''}`}>{statusLabel[p.status]}</span>
         </div>
         <p class="muted">{p.tagline}</p>
-      </a>
+        {p.stack && <ul class="tags">{p.stack.map((s) => <li>{s}</li>)}</ul>}
+        <div class="actions">
+          {p.url && <a class="btn" href={p.url} rel="noopener noreferrer" target="_blank">Open the live dashboard →</a>}
+          <a class="btn ghost" href={`/projects/${p.slug}`}>How it’s built</a>
+          {p.repo && <a class="btn ghost" href={p.repo} rel="noopener noreferrer" target="_blank">Source</a>}
+        </div>
+      </article>
     ))}
   </div>
 </Base>
 
 <style>
   .list { display: grid; gap: 1rem; }
-  .item { display: block; color: inherit; text-decoration: none; }
-  .item:hover { border-color: var(--accent); }
   .row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .row h2 { margin: 0; font-size: 1.15rem; }
+  .row h2 { margin: 0; font-size: 1.2rem; }
+  .row h2 a { color: var(--text); text-decoration: none; }
+  .row h2 a:hover { color: var(--accent); }
   .item p { margin: 0.4rem 0 0; }
+  .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.1rem; }
 </style>
